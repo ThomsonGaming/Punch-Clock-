@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import datetime
-
+from collections import defaultdict
 
 # Function to load user information from a file
 def load_user_info():
@@ -25,7 +25,6 @@ def load_user_info():
         pass
     return user_info
 
-
 # Function to save user information to a file
 def save_user_info(user_info):
     """Save user information to a file.
@@ -39,7 +38,6 @@ def save_user_info(user_info):
     with open("user_info.txt", "w") as file:
         for user_id, hourly_rate in user_info.items():
             file.write(f"{user_id},{hourly_rate}\n")  # Write each user's info as a new line in the file
-
 
 # Function to add or update a user
 def add_user():
@@ -58,7 +56,6 @@ def add_user():
             save_user_info(user_info)  # Save changes to the file
             messagebox.showinfo("User Management", f"User '{user_id}' added/updated with hourly rate of ${hourly_rate}.")
 
-
 # Function to remove a user
 def remove_user():
     """Prompt to remove a user from the system.
@@ -76,7 +73,6 @@ def remove_user():
     else:
         messagebox.showerror("User Management", "User not found.")
 
-
 # Function to access manager tools
 def access_manager_tools():
     """Prompt for a manager password to access management tools.
@@ -90,12 +86,10 @@ def access_manager_tools():
     else:
         messagebox.showerror("Access Denied", "Incorrect password.")
 
-
 # Function to log out from manager tools
 def logout_manager():
     """Hide the manager tools frame, effectively logging out the manager."""
     manager_frame.pack_forget()  # Hide the frame
-
 
 # Function for a user to punch in
 def punch_in():
@@ -118,7 +112,6 @@ def punch_in():
     else:
         messagebox.showerror("Invalid User ID", "This user ID does not exist.")
 
-
 # Function for a user to punch out
 def punch_out():
     """Record the current time as the punch-out time for a user and calculate the total hours worked.
@@ -140,7 +133,6 @@ def punch_out():
     else:
         messagebox.showerror("Not Punched In", "You're not punched in.")
 
-
 # Function to display a report of total hours worked
 def show_time_report():
     """Generate and display a report of total hours worked for each user based on punch-in/out logs.
@@ -151,7 +143,7 @@ def show_time_report():
     try:
         with open("time_log.txt", "r") as file:
             logs = file.readlines()
-        
+
         user_hours = defaultdict(float)  # Default to 0 for new keys
         temp_punch_in_time = {}  # Temporary storage for punch-in times
         for line in logs:
@@ -163,49 +155,39 @@ def show_time_report():
                 duration = timestamp - temp_punch_in_time[user_id]
                 user_hours[user_id] += duration.total_seconds() / 3600  # Convert seconds to hours
                 del temp_punch_in_time[user_id]  # Remove user from temp storage after calculating hours
-        
+
         # Generate and show the report message
         report_message = "User Hours Report:\n" + "\n".join([f"User {uid}: {hours:.2f} hours" for uid, hours in user_hours.items()])
         messagebox.showinfo("Time Report", report_message)
     except FileNotFoundError:
         messagebox.showerror("Error", "Time log file not found.")
 
-
-# Initialize user information
+# Initialize user information and global variables
 user_info = load_user_info()
-
-# Initialize global variables for punch clock functionality
 punch_in_time = {}
 
-
-# GUI Setup
+# GUI setup
 root = tk.Tk()
 root.title("Work Punch Clock System")
 root.geometry("400x300")
 
-# User Punch In/Out Frame
+# User Punch In/Out Frame setup
 user_frame = tk.Frame(root, padx=10, pady=10)
 user_frame.pack(padx=10, pady=5)
 
-# User ID entry field and Punch In/Out buttons
+# User ID entry and Punch In/Out buttons
 tk.Label(user_frame, text="User ID:").grid(row=0, column=0)
 user_id_entry = tk.Entry(user_frame)
 user_id_entry.grid(row=0, column=1)
-
 tk.Button(user_frame, text="Punch In", command=punch_in).grid(row=1, column=0, sticky="ew")
 tk.Button(user_frame, text="Punch Out", command=punch_out).grid(row=1, column=1, sticky="ew")
 
-# Manager Tools Frame (initially hidden)
+# Manager Tools Frame setup (initially hidden)
 manager_frame = tk.LabelFrame(root, text="Manager Tools", padx=10, pady=10)
-
-# Manager Tools: Buttons for adding, updating, and removing users
+# Manager Tools buttons for user management
 tk.Button(manager_frame, text="Add/Update User", command=add_user).grid(row=0, column=0, sticky="ew", padx=5, pady=2)
 tk.Button(manager_frame, text="Remove User", command=remove_user).grid(row=1, column=0, sticky="ew", padx=5)
-
-# Button to logout manager and hide manager tools
 tk.Button(manager_frame, text="Logout", command=logout_manager).grid(row=2, column=0, sticky="ew", padx=5, pady=2)
-
-# Button to show manager tools, requiring a password
 tk.Button(root, text="Manager Login", command=access_manager_tools).pack(pady=10)
 
 # Button for showing time report
