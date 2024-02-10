@@ -2,15 +2,21 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 import datetime
 from collections import defaultdict
+import os
 
 # Function Definitions
 def load_user_info():
     """Load user information from a file."""
+    user_info = {}
     try:
         with open("user_info.txt", "r") as file:
-            return {line.split(',')[0]: float(line.split(',')[1].strip()) for line in file if ',' in line}
+            for line in file:
+                if ',' in line:
+                    user_id, hourly_rate = line.strip().split(',')
+                    user_info[user_id] = float(hourly_rate)
     except FileNotFoundError:
-        return {}
+        pass
+    return user_info
 
 def save_user_info(user_info):
     """Save user information to a file."""
@@ -72,8 +78,10 @@ def punch_out():
     if user_id in punch_in_time:
         punch_out_time = datetime.datetime.now()
         duration = punch_out_time - punch_in_time[user_id]
+        total_hours = duration.total_seconds() / 3600  # Convert duration to hours
+        amount_owed = total_hours * user_info[user_id]  # Calculate amount owed
         del punch_in_time[user_id]
-        messagebox.showinfo("Punch Out", f"Punched out successfully. Total time: {duration}")
+        messagebox.showinfo("Punch Out", f"Punched out successfully. Total time: {duration}, Amount owed: ${amount_owed:.2f}")
     else:
         messagebox.showerror("Not Punched In", "You're not punched in.")
 
